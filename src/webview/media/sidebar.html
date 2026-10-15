@@ -1,0 +1,1429 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ILMU Codex</title>
+  <style>
+    :root {
+      --primary: #0048CC;
+      --primary-hover: #1A5CE5;
+      --primary-light: #3B82F6;
+      --accent: #06B6D4;
+      --bg: var(--vscode-editor-background);
+      --fg: var(--vscode-editor-foreground);
+      --card-bg: var(--vscode-sideBar-background);
+      --input-bg: var(--vscode-input-background);
+      --input-fg: var(--vscode-input-foreground);
+      --border: var(--vscode-widget-border, rgba(120, 120, 120, 0.25));
+      --badge-bg: var(--vscode-badge-background, #0048CC);
+      --badge-fg: var(--vscode-badge-foreground, #FFFFFF);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: var(--vscode-font-family, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif);
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--fg);
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      overflow: hidden;
+      font-size: 13.5px;
+    }
+
+    /* Top Header */
+    .header {
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      background: var(--card-bg);
+      flex-shrink: 0;
+    }
+
+    .header-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 600;
+      font-size: 14.5px;
+      color: var(--primary-light);
+    }
+
+    .brand-icon {
+      width: 20px;
+      height: 20px;
+      border-radius: 4px;
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .icon-btn {
+      background: transparent;
+      border: 1px solid transparent;
+      color: var(--fg);
+      opacity: 0.8;
+      cursor: pointer;
+      padding: 5px;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+    }
+
+    .icon-btn:hover {
+      opacity: 1;
+      background: var(--vscode-toolbar-hoverBackground, rgba(255, 255, 255, 0.1));
+    }
+
+    /* Tabs */
+    .tabs {
+      display: flex;
+      border-bottom: 1px solid var(--border);
+      background: var(--card-bg);
+      flex-shrink: 0;
+    }
+
+    .tab-btn {
+      flex: 1;
+      text-align: center;
+      padding: 9px 12px;
+      background: transparent;
+      border: none;
+      color: var(--fg);
+      opacity: 0.7;
+      font-weight: 500;
+      cursor: pointer;
+      position: relative;
+      font-size: 12.5px;
+      transition: all 0.15s ease;
+    }
+
+    .tab-btn:hover {
+      opacity: 1;
+    }
+
+    .tab-btn.active {
+      opacity: 1;
+      color: var(--primary-light);
+      font-weight: 600;
+    }
+
+    .tab-btn.active::after {
+      content: '';
+      position: absolute;
+      bottom: -1px;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: var(--primary-light);
+    }
+
+    /* Main Scroll Area - Takes full remaining height */
+    .main-view {
+      flex: 1;
+      min-height: 0;
+      overflow-y: auto;
+      padding: 12px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .tab-content {
+      display: none;
+      flex-direction: column;
+      height: 100%;
+    }
+
+    .tab-content.active {
+      display: flex;
+    }
+
+    /* Active File Pill */
+    .context-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 3px 10px;
+      font-size: 11.5px;
+      color: var(--fg);
+      opacity: 0.85;
+      max-width: 100%;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* Model Selector Dropdown */
+    .model-select {
+      background: var(--input-bg);
+      color: var(--input-fg);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 5px 8px;
+      font-size: 11.5px;
+      outline: none;
+      cursor: pointer;
+    }
+
+    /* Chat Messages - Generous height & clear typography */
+    .messages-container {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      flex: 1;
+      min-height: 0;
+      overflow-y: auto;
+      padding-bottom: 12px;
+    }
+
+    .msg {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      animation: fadeIn 0.18s ease-in-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .msg.user {
+      align-self: flex-end;
+      max-width: 90%;
+    }
+
+    .msg.user .bubble {
+      background: var(--primary);
+      color: #FFFFFF;
+      padding: 10px 14px;
+      border-radius: 12px 12px 3px 12px;
+      word-break: break-word;
+      font-size: 13.5px;
+      line-height: 1.55;
+    }
+
+    .msg.assistant {
+      align-self: flex-start;
+      width: 100%;
+    }
+
+    .msg.assistant .bubble {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      padding: 12px 16px;
+      border-radius: 3px 12px 12px 12px;
+      word-break: break-word;
+      font-size: 14px;
+      line-height: 1.65;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    }
+
+    /* Markdown Styling Inside Bubbles */
+    .bubble p {
+      margin: 8px 0;
+    }
+    .bubble p:first-child { margin-top: 0; }
+    .bubble p:last-child { margin-bottom: 0; }
+
+    .bubble strong {
+      font-weight: 600;
+      color: #60A5FA;
+    }
+    .msg.user .bubble strong {
+      color: #FFFFFF;
+    }
+
+    .bubble ul, .bubble ol {
+      margin: 8px 0;
+      padding-left: 20px;
+    }
+
+    .bubble li {
+      margin: 4px 0;
+    }
+
+    .bubble code {
+      background: rgba(120, 120, 120, 0.2);
+      padding: 2px 5px;
+      border-radius: 4px;
+      font-family: var(--vscode-editor-font-family, monospace);
+      font-size: 12.5px;
+    }
+
+    .bubble hr {
+      border: none;
+      border-top: 1px solid var(--border);
+      margin: 12px 0;
+      opacity: 0.6;
+    }
+
+    .code-block-wrapper {
+      margin: 10px 0;
+      background: rgba(0, 0, 0, 0.35);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      overflow: hidden;
+    }
+
+    .code-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 4px 10px;
+      background: rgba(255, 255, 255, 0.05);
+      border-bottom: 1px solid var(--border);
+      font-size: 11px;
+      color: #9CA3AF;
+    }
+
+    .code-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .code-action-btn {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--primary-light);
+      border-radius: 3px;
+      padding: 2px 7px;
+      font-size: 11px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 3px;
+    }
+    .code-action-btn:hover {
+      background: rgba(59, 130, 246, 0.15);
+      border-color: var(--primary-light);
+    }
+
+    .code-block-wrapper pre {
+      padding: 10px 12px;
+      overflow-x: auto;
+      font-family: var(--vscode-editor-font-family, monospace);
+      font-size: 13px;
+      line-height: 1.5;
+      margin: 0;
+    }
+
+    /* Reasoning accordion */
+    .reasoning-box {
+      background: rgba(59, 130, 246, 0.08);
+      border-left: 3px solid var(--primary-light);
+      padding: 8px 12px;
+      border-radius: 0 4px 4px 0;
+      margin-bottom: 10px;
+      font-size: 12px;
+      color: var(--fg);
+      opacity: 0.9;
+    }
+
+    .reasoning-title {
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      user-select: none;
+    }
+
+    .reasoning-body {
+      margin-top: 6px;
+      white-space: pre-wrap;
+      font-family: monospace;
+      font-size: 11.5px;
+      max-height: 220px;
+      overflow-y: auto;
+    }
+
+    /* Tool Call Cards */
+    .tool-card {
+      background: rgba(6, 182, 212, 0.08);
+      border: 1px solid rgba(6, 182, 212, 0.25);
+      border-radius: 6px;
+      padding: 8px 12px;
+      margin: 6px 0;
+      font-size: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .tool-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      color: var(--accent);
+      font-weight: 600;
+    }
+
+    .tool-output {
+      font-family: monospace;
+      font-size: 11.5px;
+      max-height: 120px;
+      overflow-y: auto;
+      background: rgba(0, 0, 0, 0.2);
+      padding: 6px 8px;
+      border-radius: 4px;
+      white-space: pre-wrap;
+    }
+
+    /* Confirmation Banner */
+    .confirm-card {
+      background: var(--vscode-editorWarning-background, #332b00);
+      border: 1px solid var(--vscode-editorWarning-foreground, #cca700);
+      border-radius: 6px;
+      padding: 10px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .confirm-buttons {
+      display: flex;
+      gap: 8px;
+    }
+
+    .btn-approve {
+      background: #10B981;
+      color: white;
+      border: none;
+      padding: 6px 14px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 12px;
+    }
+
+    .btn-reject {
+      background: #EF4444;
+      color: white;
+      border: none;
+      padding: 6px 14px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 12px;
+    }
+
+    /* Bottom Input Area */
+    .input-area {
+      padding: 10px 14px;
+      border-top: 1px solid var(--border);
+      background: var(--card-bg);
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    .prompt-box {
+      width: 100%;
+      background: var(--input-bg);
+      color: var(--input-fg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 10px 12px;
+      font-size: 13.5px;
+      resize: none;
+      min-height: 52px;
+      max-height: 160px;
+      outline: none;
+      line-height: 1.4;
+    }
+
+    .prompt-box:focus {
+      border-color: var(--primary-light);
+    }
+
+    .input-controls {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .chips {
+      display: flex;
+      gap: 6px;
+      overflow-x: auto;
+    }
+
+    .chip-btn {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      color: var(--fg);
+      border-radius: 12px;
+      padding: 3px 9px;
+      font-size: 11px;
+      cursor: pointer;
+      opacity: 0.85;
+      white-space: nowrap;
+    }
+
+    .chip-btn:hover {
+      opacity: 1;
+      border-color: var(--primary-light);
+    }
+
+    .send-btn {
+      background: var(--primary);
+      color: white;
+      border: none;
+      border-radius: 4px;
+      padding: 7px 16px;
+      font-size: 12.5px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .send-btn:hover {
+      background: var(--primary-hover);
+    }
+
+    .send-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    /* Cloud Tab Form & Cards */
+    .cloud-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    .cloud-title {
+      font-weight: 600;
+      font-size: 13.5px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .badge {
+      font-size: 10.5px;
+      font-weight: 700;
+      text-transform: uppercase;
+      padding: 3px 8px;
+      border-radius: 10px;
+    }
+
+    .badge.queued { background: #6B7280; color: white; }
+    .badge.running { background: #3B82F6; color: white; }
+    .badge.completed { background: #10B981; color: white; }
+    .badge.failed { background: #EF4444; color: white; }
+
+    .progress-bar-bg {
+      width: 100%;
+      height: 5px;
+      background: rgba(120, 120, 120, 0.2);
+      border-radius: 3px;
+      overflow: hidden;
+    }
+
+    .progress-bar-fill {
+      height: 100%;
+      background: var(--primary-light);
+      transition: width 0.3s ease;
+    }
+
+    .cloud-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 4px;
+    }
+
+    .btn-sm {
+      font-size: 11.5px;
+      padding: 5px 10px;
+      border-radius: 4px;
+      cursor: pointer;
+      border: 1px solid var(--border);
+      background: var(--card-bg);
+      color: var(--fg);
+    }
+
+    .btn-sm.primary {
+      background: var(--primary);
+      color: white;
+      border: none;
+    }
+
+    /* Fixed Modal Overlay for Settings — Does not squish the chat! */
+    .settings-overlay {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0, 0, 0, 0.65);
+      backdrop-filter: blur(4px);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+
+    .settings-overlay.active {
+      display: flex;
+    }
+
+    .settings-panel {
+      width: 100%;
+      max-width: 440px;
+      max-height: 85vh;
+      overflow-y: auto;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 18px;
+      box-shadow: 0 16px 36px rgba(0, 0, 0, 0.5);
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .oauth-btn {
+      background: linear-gradient(135deg, #0048CC, #2563EB);
+      color: #FFFFFF;
+      border: none;
+      border-radius: 6px;
+      padding: 9px 16px;
+      font-weight: 600;
+      font-size: 12.5px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    .auth-status-card {
+      background: rgba(16, 185, 129, 0.08);
+      border: 1px solid rgba(16, 185, 129, 0.25);
+      border-radius: 6px;
+      padding: 10px 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 12px;
+    }
+
+    .divider {
+      display: flex;
+      align-items: center;
+      text-align: center;
+      margin: 10px 0;
+      color: var(--fg);
+      opacity: 0.5;
+      font-size: 10.5px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .divider::before, .divider::after {
+      content: '';
+      flex: 1;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .divider:not(:empty)::before { margin-right: .5em; }
+    .divider:not(:empty)::after { margin-left: .5em; }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .form-group label {
+      font-weight: 600;
+      font-size: 11.5px;
+      opacity: 0.85;
+    }
+
+    .form-control {
+      background: var(--input-bg);
+      color: var(--input-fg);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 7px 10px;
+      font-size: 12.5px;
+      outline: none;
+    }
+
+    .form-control:focus {
+      border-color: var(--primary-light);
+    }
+
+    /* Model Usage Statistics Styles */
+    .usage-card {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .usage-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .usage-item {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .usage-item-top {
+      display: flex;
+      justify-content: space-between;
+      font-size: 11.5px;
+    }
+
+    .usage-bar-bg {
+      background: rgba(120, 120, 120, 0.2);
+      border-radius: 3px;
+      height: 6px;
+      overflow: hidden;
+      width: 100%;
+    }
+
+    .usage-bar-fill {
+      height: 100%;
+      border-radius: 3px;
+      transition: width 0.3s ease;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Header -->
+  <div class="header">
+    <div class="header-top">
+      <div class="brand">
+        <svg class="brand-icon" viewBox="0 0 128 128" fill="none">
+          <rect width="128" height="128" rx="28" fill="#0048CC"/>
+          <path d="M48 42 L32 64 L48 86" stroke="#FFFFFF" stroke-width="8" stroke-linecap="round"/>
+          <path d="M80 42 L96 64 L80 86" stroke="#38BDF8" stroke-width="8" stroke-linecap="round"/>
+          <circle cx="64" cy="50" r="8" fill="#38BDF8"/>
+          <circle cx="56" cy="74" r="7" fill="#FFFFFF"/>
+          <circle cx="72" cy="74" r="7" fill="#60A5FA"/>
+        </svg>
+        ILMU Codex
+      </div>
+      <div class="header-actions">
+        <select id="modelSelector" class="model-select" title="Switch ILMU Model">
+          <option value="ilmu-glm-5.3">ilmu-glm-5.3 (1M)</option>
+          <option value="ilmu-glm-5.3-flash">ilmu-glm-5.3-flash (1M)</option>
+          <option value="ilmu-v3.1">ilmu-v3.1 (200k)</option>
+          <option value="ilmu-mini-v3.3">ilmu-mini-v3.3 (200k)</option>
+        </select>
+        <button id="btnNewChat" class="icon-btn" title="New Chat Session">➕</button>
+        <button id="toggleSettingsBtn" class="icon-btn" title="Settings">⚙️</button>
+      </div>
+    </div>
+    <div id="contextChipContainer">
+      <div class="context-chip" id="activeFileChip">📄 No active file</div>
+    </div>
+  </div>
+
+  <!-- Navigation Tabs -->
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="tab-local">⚡ Local (Side-by-Side)</button>
+    <button class="tab-btn" data-tab="tab-cloud">☁️ Delegate to Cloud</button>
+  </div>
+
+  <!-- Settings Modal Overlay (Non-Intrusive, Opens on ⚙️) -->
+  <div id="settingsOverlay" class="settings-overlay">
+    <div class="settings-panel">
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <strong style="font-size:14px;">Authentication & Settings</strong>
+        <button id="closeSettingsBtn" class="icon-btn" style="font-size:16px;">✕</button>
+      </div>
+
+      <!-- Web OAuth / Connection Section -->
+      <div id="oauthContainer">
+        <div id="authStatusBox" class="auth-status-card" style="display:none;">
+          <div>
+            <span style="color:#10B981; font-weight:600;">✓ Connected</span><br/>
+            <span id="authEmailText" style="opacity:0.85; font-size:11px;"></span>
+          </div>
+          <button id="btnSignOut" class="btn-sm" style="color:#EF4444;">Sign out</button>
+        </div>
+
+        <div id="authLoginBox" style="display:flex; flex-direction:column; gap:6px;">
+          <button id="btnWebSignIn" class="oauth-btn">
+            ⚡ Connect Account (ILMUcode / Browser)
+          </button>
+          <span style="font-size:11px; opacity:0.75; text-align:center;">
+            Auto-imports from your ILMUcode desktop session or opens Console
+          </span>
+        </div>
+      </div>
+
+      <div class="divider">or enter API key</div>
+
+      <div class="form-group">
+        <label>ILMU API Key (sk-...)</label>
+        <input type="password" id="inputApiKey" class="form-control" placeholder="sk-..." />
+        <span style="font-size:10.5px; opacity:0.75;">Managed at <a href="#" id="linkConsole" style="color:var(--primary-light);">console.ilmu.ai/dashboard/keys</a></span>
+      </div>
+      <div class="form-group">
+        <label>Preferred Communication Language</label>
+        <select id="selectLanguage" class="form-control">
+          <option value="English">English</option>
+          <option value="Bahasa Malaysia">Bahasa Malaysia</option>
+          <option value="Manglish / Code-Switch">Manglish / Code-Switch</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Cloud Runner URL</label>
+        <input type="text" id="inputCloudUrl" class="form-control" value="http://localhost:4000" />
+      </div>
+      <div style="display:flex; gap:8px;">
+        <button id="saveSettingsBtn" class="btn-sm primary" style="flex:1; padding:7px;">Save Settings</button>
+        <button id="testConnectionBtn" class="btn-sm" style="flex:1; padding:7px;">Test Connection</button>
+      </div>
+      <div id="testConnectionStatus" style="font-size:11.5px; margin-top:2px;"></div>
+
+      <div class="divider">Model Usage & Percentages</div>
+
+      <div class="usage-card">
+        <div class="usage-header">
+          <span>📊 Token & Request Distribution</span>
+          <button id="btnResetUsage" class="btn-sm" style="font-size:10px; padding:2px 6px;">Reset</button>
+        </div>
+        <div id="usageStatsContainer" style="display:flex; flex-direction:column; gap:8px;">
+          <div style="font-size:11.5px; opacity:0.7; text-align:center;">No usage recorded yet.</div>
+        </div>
+        <div id="usageSummaryText" style="font-size:10.5px; opacity:0.75; text-align:right;"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tab 1: Local Side-by-Side Chat (Full Height) -->
+  <div id="tab-local" class="tab-content active main-view">
+    <div id="messagesContainer" class="messages-container">
+      <div class="msg assistant">
+        <div class="bubble">
+          <strong>Selamat datang ke ILMU Codex!</strong><br/><br/>
+          I'm your AI pair programmer running directly side-by-side in Antigravity.<br/><br/>
+          • Ask me to write, review, explain, or refactor code.<br/>
+          • I have full agentic tools to inspect files and apply diffs.<br/>
+          • Or switch to <strong>Delegate to Cloud</strong> to offload long multi-file tasks.
+        </div>
+      </div>
+    </div>
+
+    <!-- Active Confirmation Card (if any tool requires approval) -->
+    <div id="confirmationCard" class="confirm-card" style="display:none;">
+      <div id="confirmPromptText">Action requires confirmation</div>
+      <div class="confirm-buttons">
+        <button id="btnApprove" class="btn-approve">Approve</button>
+        <button id="btnReject" class="btn-reject">Reject</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tab 2: Delegate to Cloud -->
+  <div id="tab-cloud" class="tab-content main-view">
+    <div class="cloud-card">
+      <div class="cloud-title">
+        <span>🚀 Delegate Task to Cloud</span>
+      </div>
+      <p style="font-size:12px; opacity:0.85;">
+        Offload heavy, multi-file coding workflows (refactor, test suite generation, migration) to an ILMU Cloud Runner.
+      </p>
+      <div class="form-group" style="margin-top:4px;">
+        <label>Task Title</label>
+        <input type="text" id="cloudTaskTitle" class="form-control" placeholder="e.g. Generate integration tests for API" />
+      </div>
+      <div class="form-group">
+        <label>Task Specification / Instructions</label>
+        <textarea id="cloudTaskPrompt" class="form-control" rows="3" placeholder="Describe the goal, expected changes, and constraints..."></textarea>
+      </div>
+      <button id="btnSubmitCloudTask" class="send-btn" style="width:100%; justify-content:center;">
+        ☁️ Delegate to Cloud Runner
+      </button>
+    </div>
+
+    <div style="display:flex; justify-content:space-between; align-items:center; margin: 4px 0;">
+      <strong style="font-size:12.5px;">Active & Delegated Cloud Tasks</strong>
+      <button id="btnRefreshTasks" class="icon-btn" title="Refresh">🔄</button>
+    </div>
+
+    <div id="cloudTasksList" style="display:flex; flex-direction:column; gap:8px;">
+      <!-- Tasks rendered dynamically -->
+    </div>
+  </div>
+
+  <!-- Local Input Area -->
+  <div id="localInputArea" class="input-area">
+    <div class="chips">
+      <button class="chip-btn" data-prompt="/explain this code">/explain</button>
+      <button class="chip-btn" data-prompt="/refactor to improve performance">/refactor</button>
+      <button class="chip-btn" data-prompt="/generate unit tests for this file">/test</button>
+      <button class="chip-btn" data-prompt="/audit for bugs and security vulnerabilities">/audit</button>
+    </div>
+    <textarea id="chatInput" class="prompt-box" placeholder="Ask ILMU Codex or assign a task... (Enter to send, Shift+Enter for newline)"></textarea>
+    <div class="input-controls">
+      <div style="font-size:11px; opacity:0.7;">Powered by ILMU AI (YTL Labs)</div>
+      <div style="display:flex; gap:6px;">
+        <button id="btnCancel" class="btn-sm" style="display:none; color:#EF4444;">Cancel</button>
+        <button id="btnSend" class="send-btn">Send ➔</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const vscode = acquireVsCodeApi();
+
+    // DOM Elements
+    const modelSelector = document.getElementById('modelSelector');
+    const tabBtns = document.querySelectorAll('.tab-btn');
+    const tabLocal = document.getElementById('tab-local');
+    const tabCloud = document.getElementById('tab-cloud');
+    const localInputArea = document.getElementById('localInputArea');
+    const chatInput = document.getElementById('chatInput');
+    const btnSend = document.getElementById('btnSend');
+    const btnCancel = document.getElementById('btnCancel');
+    const messagesContainer = document.getElementById('messagesContainer');
+    const activeFileChip = document.getElementById('activeFileChip');
+
+    // Settings overlay elements
+    const toggleSettingsBtn = document.getElementById('toggleSettingsBtn');
+    const closeSettingsBtn = document.getElementById('closeSettingsBtn');
+    const settingsOverlay = document.getElementById('settingsOverlay');
+    const inputApiKey = document.getElementById('inputApiKey');
+    const selectLanguage = document.getElementById('selectLanguage');
+    const inputCloudUrl = document.getElementById('inputCloudUrl');
+    const saveSettingsBtn = document.getElementById('saveSettingsBtn');
+    const testConnectionBtn = document.getElementById('testConnectionBtn');
+    const testConnectionStatus = document.getElementById('testConnectionStatus');
+    const btnWebSignIn = document.getElementById('btnWebSignIn');
+    const btnNewChat = document.getElementById('btnNewChat');
+    const authStatusBox = document.getElementById('authStatusBox');
+    const authLoginBox = document.getElementById('authLoginBox');
+    const authEmailText = document.getElementById('authEmailText');
+    const btnSignOut = document.getElementById('btnSignOut');
+    const usageStatsContainer = document.getElementById('usageStatsContainer');
+    const usageSummaryText = document.getElementById('usageSummaryText');
+    const btnResetUsage = document.getElementById('btnResetUsage');
+
+    // Confirmation elements
+    const confirmationCard = document.getElementById('confirmationCard');
+    const confirmPromptText = document.getElementById('confirmPromptText');
+    const btnApprove = document.getElementById('btnApprove');
+    const btnReject = document.getElementById('btnReject');
+
+    // Cloud elements
+    const btnSubmitCloudTask = document.getElementById('btnSubmitCloudTask');
+    const cloudTaskTitle = document.getElementById('cloudTaskTitle');
+    const cloudTaskPrompt = document.getElementById('cloudTaskPrompt');
+    const cloudTasksList = document.getElementById('cloudTasksList');
+    const btnRefreshTasks = document.getElementById('btnRefreshTasks');
+
+    let currentTurnAssistantBubble = null;
+    let currentAssistantRawText = '';
+    let currentReasoningBody = null;
+
+    // Tabs switching
+    tabBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        tabBtns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        const target = btn.getAttribute('data-tab');
+        if (target === 'tab-local') {
+          tabLocal.classList.add('active');
+          tabCloud.classList.remove('active');
+          localInputArea.style.display = 'flex';
+        } else {
+          tabLocal.classList.remove('active');
+          tabCloud.classList.add('active');
+          localInputArea.style.display = 'none';
+          vscode.postMessage({ command: 'refreshCloudTasks' });
+        }
+      });
+    });
+
+    // Toggle Settings Overlay
+    toggleSettingsBtn.addEventListener('click', () => {
+      settingsOverlay.classList.toggle('active');
+    });
+    closeSettingsBtn.addEventListener('click', () => {
+      settingsOverlay.classList.remove('active');
+    });
+    settingsOverlay.addEventListener('click', (e) => {
+      if (e.target === settingsOverlay) {
+        settingsOverlay.classList.remove('active');
+      }
+    });
+
+    btnWebSignIn.addEventListener('click', () => {
+      vscode.postMessage({ command: 'startWebSignIn' });
+    });
+
+    btnSignOut.addEventListener('click', () => {
+      vscode.postMessage({ command: 'signOut' });
+    });
+
+    btnNewChat.addEventListener('click', () => {
+      messagesContainer.innerHTML = '';
+      const welcome = document.createElement('div');
+      welcome.className = 'msg assistant';
+      welcome.innerHTML = '<div class="bubble"><strong>New conversation started.</strong><br/>How can I help you with your code today?</div>';
+      messagesContainer.appendChild(welcome);
+      vscode.postMessage({ command: 'clearChat' });
+    });
+
+    saveSettingsBtn.addEventListener('click', () => {
+      vscode.postMessage({
+        command: 'saveSettings',
+        apiKey: inputApiKey.value.trim(),
+        cloudRunnerUrl: inputCloudUrl.value.trim(),
+        preferredLanguage: selectLanguage.value,
+        model: modelSelector.value
+      });
+      settingsOverlay.classList.remove('active');
+    });
+
+    // Helper functions for code block buttons
+    window.insertSnippet = function(code) {
+      vscode.postMessage({ command: 'insertCodeAtCursor', code: code });
+    };
+
+    window.applySnippet = function(code) {
+      vscode.postMessage({ command: 'applyCodeToActiveFile', code: code });
+    };
+
+    testConnectionBtn.addEventListener('click', () => {
+      testConnectionStatus.innerText = 'Testing connection to ILMU API...';
+      vscode.postMessage({ command: 'testConnection' });
+    });
+
+    if (btnResetUsage) {
+      btnResetUsage.addEventListener('click', () => {
+        vscode.postMessage({ command: 'resetUsageStats' });
+      });
+    }
+
+    // Quick prompt chips
+    document.querySelectorAll('.chip-btn').forEach(chip => {
+      chip.addEventListener('click', () => {
+        chatInput.value = chip.getAttribute('data-prompt') + ' ';
+        chatInput.focus();
+      });
+    });
+
+    // Send Message
+    function sendMessage() {
+      const text = chatInput.value.trim();
+      if (!text) return;
+
+      chatInput.value = '';
+      appendUserMessage(text);
+      btnSend.disabled = true;
+      btnCancel.style.display = 'inline-block';
+      currentAssistantRawText = '';
+
+      vscode.postMessage({
+        command: 'sendUserMessage',
+        text,
+        model: modelSelector.value
+      });
+    }
+
+    btnSend.addEventListener('click', sendMessage);
+    btnCancel.addEventListener('click', () => {
+      vscode.postMessage({ command: 'cancelTurn' });
+    });
+
+    chatInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        sendMessage();
+      }
+    });
+
+    function appendUserMessage(text) {
+      const msgDiv = document.createElement('div');
+      msgDiv.className = 'msg user';
+      msgDiv.innerHTML = '<div class="bubble">' + renderMarkdown(text) + '</div>';
+      messagesContainer.appendChild(msgDiv);
+      messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    }
+
+    function ensureAssistantBubble() {
+      if (!currentTurnAssistantBubble) {
+        const msgDiv = document.createElement('div');
+        msgDiv.className = 'msg assistant';
+        const bubble = document.createElement('div');
+        bubble.className = 'bubble';
+        msgDiv.appendChild(bubble);
+        messagesContainer.appendChild(msgDiv);
+        currentTurnAssistantBubble = bubble;
+      }
+      return currentTurnAssistantBubble;
+    }
+
+    // Confirmation handlers
+    btnApprove.addEventListener('click', () => {
+      confirmationCard.style.display = 'none';
+      vscode.postMessage({ command: 'confirmActionResponse', approved: true });
+    });
+    btnReject.addEventListener('click', () => {
+      confirmationCard.style.display = 'none';
+      vscode.postMessage({ command: 'confirmActionResponse', approved: false });
+    });
+
+    // Cloud task submission
+    btnSubmitCloudTask.addEventListener('click', () => {
+      const title = cloudTaskTitle.value.trim();
+      const prompt = cloudTaskPrompt.value.trim();
+      if (!title || !prompt) {
+        alert('Please fill in both task title and prompt.');
+        return;
+      }
+
+      vscode.postMessage({
+        command: 'delegateCloudTask',
+        title,
+        prompt,
+        model: modelSelector.value
+      });
+
+      cloudTaskTitle.value = '';
+      cloudTaskPrompt.value = '';
+    });
+
+    btnRefreshTasks.addEventListener('click', () => {
+      vscode.postMessage({ command: 'refreshCloudTasks' });
+    });
+
+    // Handle messages from Extension Host
+    window.addEventListener('message', (event) => {
+      const msg = event.data;
+      switch (msg.command) {
+        case 'initialState': {
+          if (msg.isSignedIn || msg.isConfigured) {
+            authStatusBox.style.display = 'flex';
+            authLoginBox.style.display = 'none';
+            authEmailText.innerText = msg.accountEmail || 'ILMU Account Connected';
+            // Close settings overlay if connected
+            settingsOverlay.classList.remove('active');
+          } else {
+            authStatusBox.style.display = 'none';
+            authLoginBox.style.display = 'flex';
+          }
+
+          if (msg.rawApiKey) inputApiKey.value = msg.rawApiKey;
+          if (msg.currentModel) modelSelector.value = msg.currentModel;
+          if (msg.preferredLanguage && selectLanguage) selectLanguage.value = msg.preferredLanguage;
+          if (msg.cloudRunnerUrl) inputCloudUrl.value = msg.cloudRunnerUrl;
+          if (msg.usage) renderUsageBreakdown(msg.usage);
+          updateActiveContext(msg.context);
+          break;
+        }
+
+        case 'activeContextChanged': {
+          updateActiveContext(msg.context);
+          break;
+        }
+
+        case 'connectionTestResult': {
+          testConnectionStatus.innerText = msg.message;
+          testConnectionStatus.style.color = msg.success ? '#10B981' : '#EF4444';
+          break;
+        }
+
+        case 'streamReasoning': {
+          const bubble = ensureAssistantBubble();
+          if (!currentReasoningBody) {
+            const box = document.createElement('div');
+            box.className = 'reasoning-box';
+            box.innerHTML = '<div class="reasoning-title">🧠 Thinking...</div><div class="reasoning-body"></div>';
+            bubble.appendChild(box);
+            currentReasoningBody = box.querySelector('.reasoning-body');
+          }
+          currentReasoningBody.textContent += msg.reasoning;
+          messagesContainer.scrollTop = messagesContainer.scrollHeight;
+          break;
+        }
+
+        case 'streamToken': {
+          const bubble = ensureAssistantBubble();
+          currentAssistantRawText += msg.token;
+          
+          let contentDiv = bubble.querySelector('.bubble-content');
+          if (!contentDiv) {
+            contentDiv = document.createElement('div');
+            contentDiv.className = 'bubble-content';
+            bubble.appendChild(contentDiv);
+          }
+          contentDiv.innerHTML = renderMarkdown(currentAssistantRawText);
+          messagesContainer.scrollTop = messagesContainer.scrollHeight;
+          break;
+        }
+
+        case 'toolStart': {
+          const bubble = ensureAssistantBubble();
+          const card = document.createElement('div');
+          card.className = 'tool-card';
+          card.id = 'tool_' + Date.now();
+          card.innerHTML = '<div class="tool-header"><span>🔧 ' + escapeHtml(msg.toolName) + '</span><span>Running...</span></div><div style="font-size:11px; opacity:0.8;">' + escapeHtml(JSON.stringify(msg.args)) + '</div>';
+          bubble.appendChild(card);
+          messagesContainer.scrollTop = messagesContainer.scrollHeight;
+          break;
+        }
+
+        case 'toolResult': {
+          const bubble = ensureAssistantBubble();
+          const card = document.createElement('div');
+          card.className = 'tool-card';
+          card.innerHTML = '<div class="tool-header"><span>✓ ' + escapeHtml(msg.toolName) + '</span><span>Completed</span></div><div class="tool-output">' + escapeHtml(msg.output.slice(0, 300)) + (msg.output.length > 300 ? '...' : '') + '</div>';
+          bubble.appendChild(card);
+          messagesContainer.scrollTop = messagesContainer.scrollHeight;
+          break;
+        }
+
+        case 'requestConfirmation': {
+          confirmPromptText.innerText = msg.description;
+          confirmationCard.style.display = 'flex';
+          break;
+        }
+
+        case 'turnDone':
+        case 'turnError':
+        case 'turnCancelled': {
+          btnSend.disabled = false;
+          btnCancel.style.display = 'none';
+          currentTurnAssistantBubble = null;
+          currentReasoningBody = null;
+          currentAssistantRawText = '';
+          if (msg.usage) renderUsageBreakdown(msg.usage);
+          if (msg.error) {
+            const bubble = ensureAssistantBubble();
+            const errDiv = document.createElement('div');
+            errDiv.style.color = '#EF4444';
+            errDiv.style.marginTop = '6px';
+            errDiv.innerText = '❌ ' + msg.error;
+            bubble.appendChild(errDiv);
+          }
+          break;
+        }
+
+        case 'cloudTasksList': {
+          renderCloudTasks(msg.tasks || [], msg.runnerOffline);
+          break;
+        }
+
+        case 'cloudTaskUpdated': {
+          vscode.postMessage({ command: 'refreshCloudTasks' });
+          break;
+        }
+      }
+    });
+
+    function updateActiveContext(ctx) {
+      if (ctx && ctx.activeFileRelative) {
+        activeFileChip.innerText = '📄 ' + ctx.activeFileRelative + (ctx.cursorLine ? ':' + ctx.cursorLine : '');
+        activeFileChip.title = ctx.activeFilePath || '';
+      } else {
+        activeFileChip.innerText = '📄 No active file';
+      }
+    }
+
+    function renderUsageBreakdown(usage) {
+      if (!usageStatsContainer) return;
+      if (!usage || !usage.models || usage.totalCalls === 0) {
+        usageStatsContainer.innerHTML = '<div style="font-size:11.5px; opacity:0.7; text-align:center;">No usage recorded yet. Start chatting or typing code!</div>';
+        if (usageSummaryText) usageSummaryText.innerText = '';
+        return;
+      }
+
+      const colors = {
+        'ilmu-glm-5.3': '#3B82F6',
+        'ilmu-glm-5.3-flash': '#10B981',
+        'ilmu-v3.1': '#8B5CF6',
+        'ilmu-mini-v3.3': '#F59E0B'
+      };
+
+      let html = '';
+      usage.models.forEach(m => {
+        const color = colors[m.model] || '#06B6D4';
+        html += '<div class="usage-item">' +
+          '<div class="usage-item-top">' +
+            '<span style="font-weight:600; color:' + color + ';">' + escapeHtml(m.model) + '</span>' +
+            '<span><strong>' + m.tokenPercent + '%</strong> tokens (' + m.callPercent + '% requests)</span>' +
+          '</div>' +
+          '<div class="usage-bar-bg">' +
+            '<div class="usage-bar-fill" style="width:' + m.tokenPercent + '%; background:' + color + ';"></div>' +
+          '</div>' +
+          '<div style="font-size:10.5px; opacity:0.75; display:flex; justify-content:space-between;">' +
+            '<span>' + m.tokens.toLocaleString() + ' tokens</span>' +
+            '<span>' + m.calls + ' calls</span>' +
+          '</div>' +
+        '</div>';
+      });
+
+      usageStatsContainer.innerHTML = html;
+      if (usageSummaryText) {
+        usageSummaryText.innerText = 'Total: ' + usage.totalTokens.toLocaleString() + ' tokens across ' + usage.totalCalls + ' requests';
+      }
+    }
+
+    function renderCloudTasks(tasks, runnerOffline) {
+      if (runnerOffline) {
+        cloudTasksList.innerHTML = '<div style="font-size:12px; opacity:0.8; padding:12px; background:var(--card-bg); border-radius:6px; border:1px solid var(--border);">⚠️ Cloud Runner offline. Start the cloud runner service or check URL in Settings.</div>';
+        return;
+      }
+
+      if (tasks.length === 0) {
+        cloudTasksList.innerHTML = '<div style="font-size:12px; opacity:0.75; text-align:center; padding:16px;">No delegated tasks yet. Submit a task above!</div>';
+        return;
+      }
+
+      cloudTasksList.innerHTML = '';
+      tasks.forEach(task => {
+        const item = document.createElement('div');
+        item.className = 'cloud-card';
+        item.innerHTML = '<div class="cloud-title"><span>' + escapeHtml(task.title) + '</span><span class="badge ' + task.status + '">' + task.status + '</span></div>' +
+          '<div style="font-size:11.5px; opacity:0.8;">' + escapeHtml(task.prompt.slice(0, 80)) + '...</div>' +
+          '<div class="progress-bar-bg"><div class="progress-bar-fill" style="width: ' + (task.progressPercent || 0) + '%"></div></div>' +
+          '<div class="cloud-actions">' +
+          (task.status === 'completed' && task.diff ? '<button class="btn-sm primary btn-apply-diff" data-id="' + task.id + '">Apply Diff to IDE</button>' : '') +
+          (task.status === 'running' || task.status === 'queued' ? '<button class="btn-sm btn-cancel-task" data-id="' + task.id + '" style="color:#EF4444;">Cancel</button>' : '') +
+          '</div>';
+
+        const applyBtn = item.querySelector('.btn-apply-diff');
+        if (applyBtn) {
+          applyBtn.addEventListener('click', () => {
+            vscode.postMessage({ command: 'applyCloudDiff', task });
+          });
+        }
+
+        const cancelBtn = item.querySelector('.btn-cancel-task');
+        if (cancelBtn) {
+          cancelBtn.addEventListener('click', () => {
+            vscode.postMessage({ command: 'cancelCloudTask', taskId: task.id });
+          });
+        }
+
+        cloudTasksList.appendChild(item);
+      });
+    }
+
+    // Fast and safe Markdown Parser
+    function renderMarkdown(md) {
+      if (!md) return '';
+      var escaped = md
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+
+      // Code blocks ```code```
+      escaped = escaped.replace(/```([a-zA-Z0-9_-]*)\n([\s\S]*?)```/g, function(match, lang, code) {
+        var l = lang || 'code';
+        var encoded = encodeURIComponent(code.trim());
+        return '<div class="code-block-wrapper">' +
+          '<div class="code-header">' +
+            '<span>' + l + '</span>' +
+            '<div class="code-actions">' +
+              '<button class="code-action-btn" title="Insert at Cursor" onclick="insertSnippet(decodeURIComponent(\'' + encoded + '\'))">📥 Insert</button>' +
+              '<button class="code-action-btn" title="Apply to active file" onclick="applySnippet(decodeURIComponent(\'' + encoded + '\'))">⚡ Apply</button>' +
+              '<button class="code-action-btn" title="Copy code" onclick="navigator.clipboard.writeText(decodeURIComponent(\'' + encoded + '\'))">📋 Copy</button>' +
+            '</div>' +
+          '</div>' +
+          '<pre><code>' + code.trim() + '</code></pre>' +
+        '</div>';
+      });
+
+      // Inline code
+      escaped = escaped.replace(/`([^`]+)`/g, '<code>$1</code>');
+
+      // Headings
+      escaped = escaped.replace(/^### (.*$)/gim, '<h4 style="margin:10px 0 4px; color:#93C5FD; font-size:13.5px;">$1</h4>');
+      escaped = escaped.replace(/^## (.*$)/gim, '<h3 style="margin:12px 0 6px; color:#60A5FA; font-size:14.5px;">$1</h3>');
+      escaped = escaped.replace(/^# (.*$)/gim, '<h2 style="margin:14px 0 8px; color:#3B82F6; font-size:15.5px;">$1</h2>');
+
+      // Horizontal rules
+      escaped = escaped.replace(/^---$/gim, '<hr/>');
+
+      // Bold & Italic
+      escaped = escaped.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+      escaped = escaped.replace(/\*([^*]+)\*/g, '<em>$1</em>');
+
+      // Bullet lists
+      escaped = escaped.replace(/^\s*[-*]\s+(.*)$/gim, '<li>$1</li>');
+      escaped = escaped.replace(/(<li>.*<\/li>)/gis, '<ul>$1</ul>');
+      escaped = escaped.replace(/<\/ul>\s*<ul>/g, '');
+
+      // Numbered lists
+      escaped = escaped.replace(/^\s*(\d+)\.\s+(.*)$/gim, '<li>$2</li>');
+
+      // Paragraphs
+      var paragraphs = escaped.split(/\n{2,}/);
+      return paragraphs.map(function(p) {
+        p = p.trim();
+        if (!p) return '';
+        if (p.startsWith('<div') || p.startsWith('<pre') || p.startsWith('<ul') || p.startsWith('<h') || p.startsWith('<hr')) {
+          return p;
+        }
+        return '<p>' + p.replace(/\n/g, '<br/>') + '</p>';
+      }).join('');
+    }
+
+    function escapeHtml(text) {
+      if (!text) return '';
+      return String(text)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
+    // Initialize extension communication
+    vscode.postMessage({ command: 'init' });
+  </script>
+</body>
+</html>

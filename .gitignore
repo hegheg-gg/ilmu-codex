@@ -1,0 +1,28 @@
+# Dependencies
+node_modules/
+
+# Build artifacts
+dist/
+out/
+*.vsix
+
+# Environment & secrets
+.env
+.env.*
+!.env.example
+
+# Logs
+*.log
+npm-debug.log*
+
+# IDE & Editor
+.vscode-test/
+.idea/
+*.swp
+*.suo
+*.ntvs*
+*.njsproj
+
+# OS Files
+.DS_Store
+Thumbs.db

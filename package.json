@@ -1,0 +1,222 @@
+{
+  "name": "ilmu-codex",
+  "displayName": "ILMU Codex - AI Pair Programmer & Cloud Delegation",
+  "description": "Side-by-side Codex AI assistant for Antigravity & VS Code, powered by ILMU API models with local execution and cloud task delegation.",
+  "version": "0.1.0",
+  "publisher": "ilmu-ai",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/hegheg-gg/ilmu-codex.git"
+  },
+  "categories": [
+    "AI",
+    "Programming Languages",
+    "Education"
+  ],
+  "keywords": [
+    "ilmu",
+    "codex",
+    "ai",
+    "agent",
+    "cloud delegation",
+    "malaysia",
+    "antigravity"
+  ],
+  "main": "./dist/extension.js",
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "contributes": {
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "ilmu-codex-container",
+          "title": "ILMU Codex",
+          "icon": "resources/icon.svg"
+        }
+      ]
+    },
+    "views": {
+      "ilmu-codex-container": [
+        {
+          "type": "webview",
+          "id": "ilmuCodex.sidebar",
+          "name": "Codex Assistant"
+        }
+      ]
+    },
+    "commands": [
+      {
+        "command": "ilmuCodex.openSidebar",
+        "title": "ILMU Codex: Open Sidebar",
+        "icon": "$(layout-sidebar-right)"
+      },
+      {
+        "command": "ilmuCodex.newChat",
+        "title": "ILMU Codex: New Chat Session",
+        "icon": "$(add)"
+      },
+      {
+        "command": "ilmuCodex.delegateTask",
+        "title": "ILMU Codex: Delegate Task to Cloud",
+        "icon": "$(cloud-upload)"
+      },
+      {
+        "command": "ilmuCodex.explainSelectedCode",
+        "title": "ILMU Codex: Explain Code"
+      },
+      {
+        "command": "ilmuCodex.refactorSelectedCode",
+        "title": "ILMU Codex: Refactor Code"
+      },
+      {
+        "command": "ilmuCodex.generateTests",
+        "title": "ILMU Codex: Generate Unit Tests"
+      },
+      {
+        "command": "ilmuCodex.openSettings",
+        "title": "ILMU Codex: Open Settings"
+      }
+    ],
+    "menus": {
+      "view/title": [
+        {
+          "command": "ilmuCodex.newChat",
+          "when": "view == ilmuCodex.sidebar",
+          "group": "navigation"
+        },
+        {
+          "command": "ilmuCodex.delegateTask",
+          "when": "view == ilmuCodex.sidebar",
+          "group": "navigation"
+        }
+      ],
+      "editor/context": [
+        {
+          "command": "ilmuCodex.explainSelectedCode",
+          "when": "editorHasSelection",
+          "group": "ilmuCodex@1"
+        },
+        {
+          "command": "ilmuCodex.refactorSelectedCode",
+          "when": "editorHasSelection",
+          "group": "ilmuCodex@2"
+        },
+        {
+          "command": "ilmuCodex.generateTests",
+          "when": "editorHasSelection",
+          "group": "ilmuCodex@3"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "ILMU Codex",
+      "properties": {
+        "ilmuCodex.apiKey": {
+          "type": "string",
+          "default": "",
+          "description": "ILMU API Key starting with sk- (from https://console.ilmu.ai/dashboard/keys)",
+          "order": 1
+        },
+        "ilmuCodex.baseUrl": {
+          "type": "string",
+          "default": "https://api.ilmu.ai/v1",
+          "description": "Base URL for ILMU API (default: https://api.ilmu.ai/v1)",
+          "order": 2
+        },
+        "ilmuCodex.model": {
+          "type": "string",
+          "default": "ilmu-glm-5.3",
+          "enum": [
+            "ilmu-glm-5.3",
+            "ilmu-glm-5.3-flash",
+            "ilmu-v3.1",
+            "ilmu-mini-v3.3"
+          ],
+          "enumDescriptions": [
+            "ilmu-glm-5.3: Flagship coding and agentic tool use (1M context)",
+            "ilmu-glm-5.3-flash: Fast, low-cost coding (1M context)",
+            "ilmu-v3.1: Flagship reasoning and extended thinking (200k context)",
+            "ilmu-mini-v3.3: High-volume fast summaries & classification (200k context)"
+          ],
+          "description": "Default model to use for code generation and agent turns.",
+          "order": 3
+        },
+        "ilmuCodex.reasoningEffort": {
+          "type": "string",
+          "default": "medium",
+          "enum": [
+            "none",
+            "minimal",
+            "low",
+            "medium",
+            "high"
+          ],
+          "description": "Reasoning effort for ILMU models (none/minimal/low turn off thinking, medium/high enable thinking).",
+          "order": 4
+        },
+        "ilmuCodex.cloudRunnerUrl": {
+          "type": "string",
+          "default": "http://localhost:4000",
+          "description": "URL of the ILMU Cloud Delegation Runner endpoint (e.g. http://localhost:4000 or your remote runner URL).",
+          "order": 5
+        },
+        "ilmuCodex.cloudRunnerToken": {
+          "type": "string",
+          "default": "",
+          "description": "Authentication token for the Cloud Delegation Runner service.",
+          "order": 6
+        },
+        "ilmuCodex.autoApproveReadOnly": {
+          "type": "boolean",
+          "default": true,
+          "description": "Automatically allow read-only tool executions (readFile, listDirectory, grep) without prompting.",
+          "order": 7
+        },
+        "ilmuCodex.preferredLanguage": {
+          "type": "string",
+          "default": "English",
+          "enum": [
+            "English",
+            "Bahasa Malaysia",
+            "Manglish / Code-Switch"
+          ],
+          "description": "Preferred communication language with ILMU Codex.",
+          "order": 8
+        },
+        "ilmuCodex.enableInlineCompletion": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable Copilot-style ghost text / tab inline code autocompletion.",
+          "order": 9
+        },
+        "ilmuCodex.inlineCompletionModel": {
+          "type": "string",
+          "default": "ilmu-glm-5.3-flash",
+          "enum": [
+            "ilmu-glm-5.3-flash",
+            "ilmu-mini-v3.3",
+            "ilmu-glm-5.3"
+          ],
+          "description": "Fast model used for real-time inline ghost text code suggestions.",
+          "order": 10
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./ && node -e \"const fs=require('fs'); fs.mkdirSync('dist/webview/media',{recursive:true}); fs.copyFileSync('src/webview/media/sidebar.html','dist/webview/media/sidebar.html');\"",
+    "watch": "tsc -watch -p ./",
+    "package": "vsce package --no-dependencies"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.0",
+    "@types/vscode": "^1.85.0",
+    "typescript": "^5.3.3"
+  }
+}

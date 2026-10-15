@@ -1,0 +1,9 @@
+.vscode/**
+.vscode-test/**
+src/**
+!src/webview/media/**
+cloud-runner/**
+.git/**
+node_modules/**
+tsconfig.json
+**/*.map

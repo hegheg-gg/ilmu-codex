@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <defs>
+    <linearGradient id="ilmuGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0048CC" />
+      <stop offset="50%" stop-color="#3B82F6" />
+      <stop offset="100%" stop-color="#06B6D4" />
+    </linearGradient>
+    <linearGradient id="glowGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#60A5FA" stop-opacity="0.8"/>
+      <stop offset="100%" stop-color="#38BDF8" stop-opacity="0.2"/>
+    </linearGradient>
+  </defs>
+  <!-- Background Rounded Rect -->
+  <rect x="8" y="8" width="112" height="112" rx="28" fill="#0B0C10" stroke="url(#ilmuGrad)" stroke-width="3" />
+  
+  <!-- Outer Glow Arc -->
+  <circle cx="64" cy="64" r="44" fill="none" stroke="url(#glowGrad)" stroke-width="2" stroke-dasharray="14 8" opacity="0.6"/>
+
+  <!-- Left Code Bracket -->
+  <path d="M48 42 L32 64 L48 86" fill="none" stroke="#60A5FA" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" />
+
+  <!-- Right Code Bracket -->
+  <path d="M80 42 L96 64 L80 86" fill="none" stroke="#38BDF8" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" />
+
+  <!-- Center Brain / Node Circuit -->
+  <circle cx="64" cy="50" r="5" fill="#38BDF8" />
+  <circle cx="56" cy="74" r="4.5" fill="#60A5FA" />
+  <circle cx="72" cy="74" r="4.5" fill="#06B6D4" />
+  
+  <line x1="64" y1="50" x2="56" y2="74" stroke="#93C5FD" stroke-width="2.5" stroke-linecap="round" />
+  <line x1="64" y1="50" x2="72" y2="74" stroke="#93C5FD" stroke-width="2.5" stroke-linecap="round" />
+  <line x1="56" y1="74" x2="72" y2="74" stroke="#93C5FD" stroke-width="2" stroke-dasharray="2 3" />
+</svg>
